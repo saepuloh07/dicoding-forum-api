@@ -1,4 +1,4 @@
-const AddUserCommentLikesUseCase = require('../../../../Applications/use_case/AddUserCommentLikesUseCase');
+const AddDeleteCommentLikesUseCase = require('../../../../Applications/use_case/AddDeleteCommentLikesUseCase');
 
 class UserCommentLikesHandler {
   constructor(container) {
@@ -8,7 +8,7 @@ class UserCommentLikesHandler {
   }
 
   async postCommentLikesHandler(request, h) {
-    const addUserCommentLikesUseCase = this._container.getInstance(AddUserCommentLikesUseCase.name);
+    const addDeleteCommentLikesUseCase = this._container.getInstance(AddDeleteCommentLikesUseCase.name);
     const { id: owner } = request.auth.credentials;
     const { threadId: thread, commentId: comment } = request.params;
 
@@ -18,7 +18,7 @@ class UserCommentLikesHandler {
       comment,
     };
 
-    await addUserCommentLikesUseCase.execute(payload);
+    await addDeleteCommentLikesUseCase.execute(payload);
 
     return h.response({
       status: 'success',

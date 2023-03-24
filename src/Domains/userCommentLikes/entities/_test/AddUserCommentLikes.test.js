@@ -1,6 +1,6 @@
-const AddUserCommentLikes = require('../AddUserCommentLikes');
+const AddDeleteCommentLikes = require('../AddDeleteCommentLikes');
 
-describe('a AddUserCommentLikes entities', () => {
+describe('a AddDeleteCommentLikes entities', () => {
   it('should throw error when payload did not contain needed property', () => {
     // Arrange
     const payload = {
@@ -8,7 +8,7 @@ describe('a AddUserCommentLikes entities', () => {
     };
 
     // Action and Assert
-    expect(() => new AddUserCommentLikes(payload)).toThrowError('ADD_USER_COMMENT_LIKES.NOT_CONTAIN_NEEDED_PROPERTY');
+    expect(() => new AddDeleteCommentLikes(payload)).toThrowError('ADD_USER_COMMENT_LIKES.NOT_CONTAIN_NEEDED_PROPERTY');
   });
 
   it('should throw error when payload did not meet data type specification', () => {
@@ -20,10 +20,10 @@ describe('a AddUserCommentLikes entities', () => {
     };
 
     // Action and Assert
-    expect(() => new AddUserCommentLikes(payload)).toThrowError('ADD_USER_COMMENT_LIKES.NOT_MEET_DATA_TYPE_SPECIFICATION');
+    expect(() => new AddDeleteCommentLikes(payload)).toThrowError('ADD_USER_COMMENT_LIKES.NOT_MEET_DATA_TYPE_SPECIFICATION');
   });
 
-  it('should create addUserCommentLikes object correctly', () => {
+  it('should create addDeleteCommentLikes object correctly', () => {
     // Arrange
     const payload = {
       owner: 'user-1234',
@@ -32,7 +32,7 @@ describe('a AddUserCommentLikes entities', () => {
     };
 
     // Action
-    const { owner, comment, thread } = new AddUserCommentLikes(payload);
+    const { owner, comment, thread } = new AddDeleteCommentLikes(payload);
 
     // Assert
     expect(owner).toEqual(payload.owner);

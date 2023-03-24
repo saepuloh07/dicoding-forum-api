@@ -1,4 +1,4 @@
-class AddUserCommentLikes {
+class AddDeleteCommentLikes {
   constructor(payload) {
     this._verifyPayload(payload);
 
@@ -19,4 +19,4 @@ class AddUserCommentLikes {
   }
 }
 
-module.exports = AddUserCommentLikes;
+module.exports = AddDeleteCommentLikes;

@@ -10,18 +10,14 @@ class UserCommentLikesRepositoryPostgres extends UserCommentLikesRepository {
   }
 
   async addUserCommentLikes({ owner, comment }) {
-    try {
-      const id = `likes-${this._idGenerator()}`;
+    const id = `likes-${this._idGenerator()}`;
 
-      const query = {
-        text: 'INSERT INTO user_comment_likes VALUES($1, $2, $3) RETURNING id, owner, comment',
-        values: [id, owner, comment],
-      };
+    const query = {
+      text: 'INSERT INTO user_comment_likes VALUES($1, $2, $3) RETURNING id, owner, comment',
+      values: [id, owner, comment],
+    };
 
-      await this._pool.query(query);
-    } catch (error) {
-      await this.deleteUserCommentLikes({ owner, comment });
-    }
+    await this._pool.query(query);
   }
 
   async deleteUserCommentLikes({ owner, comment }) {
@@ -31,6 +27,18 @@ class UserCommentLikesRepositoryPostgres extends UserCommentLikesRepository {
     };
 
     await this._pool.query(query);
+  }
+
+  async verifyCommentLikeIsExist({ owner, comment }) {
+    const query = {
+      text: 'SELECT * FROM user_comment_likes WHERE owner = $1 AND comment = $2',
+      values: [owner, comment],
+    };
+
+    const result = await this._pool.query(query);
+    
+    if (result.rowCount > 0) return true;
+    return false;
   }
 
   async getCommentLikes(comment) {

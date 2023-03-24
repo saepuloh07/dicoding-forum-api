@@ -2,7 +2,7 @@ const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const UserCommentLikesTableTestHelper = require('../../../../tests/UserCommentLikesTableTestHelper');
-const AddUserCommentLikes = require('../../../Domains/userCommentLikes/entities/AddUserCommentLikes');
+const AddUserCommentLikes = require('../../../Domains/userCommentLikes/entities/AddDeleteCommentLikes');
 const pool = require('../../database/postgres/pool');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 const UserCommentLikesRepositoryPostgres = require('../UserCommentLikesRepositoryPostgres');
@@ -20,7 +20,7 @@ describe('UserCommentLikesRepositoryPostgres', () => {
   });
 
   describe('addUserCommentLikes function', () => {
-    it('should return likesCount correctly after add new likes', async () => {
+    it('should persist add new comment like correctly', async () => {
       // Arrange
       const userPayload = { id: 'user-1234', username: 'saeful' };
       const threadPayload = { id: 'thread-1234', owner: userPayload.id };
@@ -41,34 +41,72 @@ describe('UserCommentLikesRepositoryPostgres', () => {
       await userCommentLikesRepositoryPostgres.addUserCommentLikes(payload);
 
       // Assert
-      const likes = await UserCommentLikesTableTestHelper.getCommentLikes(commentPayload.id);
+      const likes = await UserCommentLikesTableTestHelper.findLikesByCommentAndOwner(commentPayload.id, userPayload.id);
       expect(likes).toHaveLength(1);
     });
+  });
 
-    it('should return likesCount correctly after delete likes', async () => {
+  describe('verifyCommentLikeIsExist function', () => {
+    it('should return TRUE if comment like already exist', async () => {
       // Arrange
       const userPayload = { id: 'user-1234', username: 'saeful' };
       const threadPayload = { id: 'thread-1234', owner: userPayload.id };
       const commentPayload = { id: 'comment-1234', thread: threadPayload.id, owner: userPayload.id };
-      const likesPayload = { id: 'likes-0001', owner: userPayload.id, comment: commentPayload.id };
+      const likePayload = { id: 'likes-1234', comment: commentPayload.id, owner: userPayload.id };
       await UsersTableTestHelper.addUser(userPayload);
       await ThreadsTableTestHelper.addThread(threadPayload);
       await CommentsTableTestHelper.addComment(commentPayload);
-      await UserCommentLikesTableTestHelper.addUserCommentLikes(likesPayload);
+      await UserCommentLikesTableTestHelper.addUserCommentLikes(likePayload);
+
+      const fakeIdGenerator = () => '1234'; // stub!
+      const userCommentLikesRepositoryPostgres = new UserCommentLikesRepositoryPostgres(pool, fakeIdGenerator);
+
+      // Action
+      const isExist = await userCommentLikesRepositoryPostgres.verifyCommentLikeIsExist(likePayload);
+
+      // Assert
+      expect(isExist).toBeDefined();
+      expect(isExist).toStrictEqual(true);
+    });
+
+    it('should return FALSE if comment like does not exist', async () => {
+      // Arrange
+      const userCommentLikesRepositoryPostgres = new UserCommentLikesRepositoryPostgres(pool, {});
+
+      // Action
+      const isExist = await userCommentLikesRepositoryPostgres.verifyCommentLikeIsExist({owner: 'user-1234', comment: 'comment-1234'});
+
+      // Assert
+      expect(isExist).toBeDefined();
+      expect(isExist).toStrictEqual(false);
+    });
+  });
+
+  describe('deleteUserCommentLikes function', () => {
+    it('should persist delete comment like correctly', async () => {
+      // Arrange
+      const userPayload = { id: 'user-1234', username: 'saeful' };
+      const threadPayload = { id: 'thread-1234', owner: userPayload.id };
+      const commentPayload = { id: 'comment-1234', thread: threadPayload.id, owner: userPayload.id };
+      const likePayload = { id: 'likes-1234', comment: commentPayload.id, owner: userPayload.id };
+      await UsersTableTestHelper.addUser(userPayload);
+      await ThreadsTableTestHelper.addThread(threadPayload);
+      await CommentsTableTestHelper.addComment(commentPayload);
+      await UserCommentLikesTableTestHelper.addUserCommentLikes(likePayload);
 
       const payload = new AddUserCommentLikes({
         owner: userPayload.id,
         comment: commentPayload.id,
         thread: threadPayload.id
-    });
+      });
       const fakeIdGenerator = () => '1234'; // stub!
       const userCommentLikesRepositoryPostgres = new UserCommentLikesRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      await userCommentLikesRepositoryPostgres.addUserCommentLikes(payload);
+      await userCommentLikesRepositoryPostgres.deleteUserCommentLikes(payload);
 
       // Assert
-      const likes = await UserCommentLikesTableTestHelper.getCommentLikes(commentPayload.id);
+      const likes = await UserCommentLikesTableTestHelper.findLikesByCommentAndOwner(commentPayload.id, userPayload.id);
       expect(likes).toHaveLength(0);
     });
   });
@@ -94,6 +132,7 @@ describe('UserCommentLikesRepositoryPostgres', () => {
       const likesCount = await userCommentLikesRepositoryPostgres.getCommentLikes(commentPayload.id);
       
       // Assert
+      expect(likesCount).toBeDefined();
       expect(likesCount).toEqual(2);
     });
   });

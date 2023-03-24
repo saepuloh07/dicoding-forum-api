@@ -1,6 +1,6 @@
-const AddUserCommentLikes = require('../../Domains/userCommentLikes/entities/AddUserCommentLikes');
+const AddUserCommentLikes = require('../../Domains/userCommentLikes/entities/AddDeleteCommentLikes');
 
-class AddUserCommentLikesUseCase {
+class AddDeleteCommentLikesUseCase {
   constructor({ threadRepository, commentRepository, userCommentLikesRepository }) {
     this._threadRepository = threadRepository;
     this._commentRepository = commentRepository;
@@ -13,8 +13,13 @@ class AddUserCommentLikesUseCase {
     await this._commentRepository.checkAvailabilityComment(comment);
 
     const payload = new AddUserCommentLikes(useCasePayload);
-    await this._userCommentLikesRepository.addUserCommentLikes(payload);
+    const isExist = await this._userCommentLikesRepository.verifyCommentLikeIsExist(payload);
+    if (isExist) {
+      await this._userCommentLikesRepository.deleteUserCommentLikes(payload);
+    } else {
+      await this._userCommentLikesRepository.addUserCommentLikes(payload);
+    }
   }
 }
 
-module.exports = AddUserCommentLikesUseCase;
+module.exports = AddDeleteCommentLikesUseCase;
